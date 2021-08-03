@@ -9,10 +9,21 @@ import UIKit
 
 class ToDoTableTableViewController: UITableViewController {
 
-    var listOfToDo : [ToDoClass] = []
+    var listOfToDo : [ToDoCD] = []
 
+    func getToDos(){
+        if let accessToCoreData = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext{
+            
+            if let dataFromCoreData = try? accessToCoreData.fetch(ToDoCD.fetchRequest()) as? [ToDoCD]{
+                
+                listOfToDo = dataFromCoreData
+                tableView.reloadData()
+            }
+        }
+        
+    }
     
-    func createToDo() -> [ToDoClass] {
+   /* func createToDo() -> [ToDoClass] {
 
          let swiftToDo = ToDoClass()
          swiftToDo.description = "Learn Swift"
@@ -23,13 +34,14 @@ class ToDoTableTableViewController: UITableViewController {
          // important is set to false by default
 
          return [swiftToDo, dogToDo]
+     
     }
 
-    
+    */
     override func viewDidLoad() {
         super.viewDidLoad()
-
-          listOfToDo = createToDo()
+        
+//          listOfToDo = createToDo()
 
     }
 
@@ -45,11 +57,14 @@ class ToDoTableTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
         let eachToDo = listOfToDo[indexPath.row]
-        if eachToDo.important {
-            cell.textLabel?.text = "❗️" + eachToDo.description
-          } else {
-            cell.textLabel?.text = eachToDo.description
-          }
+        if let thereIsDescription = eachToDo.descriptionInCD {
+            if eachToDo.importantInCD {
+                cell.textLabel?.text = "❗️" + thereIsDescription
+            } else {
+              cell.textLabel?.text = eachToDo.descriptionInCD
+            }
+        }
+            
 
         // Configure the cell...
 
@@ -78,7 +93,7 @@ class ToDoTableTableViewController: UITableViewController {
         
         if let nextCompletedToDoVC = segue.destination as?
             CompletedToDoViewController{
-            if let choosenToDo = sender as? ToDoClass {
+            if let choosenToDo = sender as? ToDoCD {
                 nextCompletedToDoVC.selectedTodo = choosenToDo
                 nextCompletedToDoVC.previousToDoTVC = self
             }
